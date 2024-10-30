@@ -26,7 +26,7 @@ from transformers import (
     is_torch_available,
     is_vision_available,
 )
-from transformers.testing_utils import require_bitsandbytes, require_torch, require_torch_gpu, slow, torch_device
+from transformers.testing_utils import backend_empty_cache, require_bitsandbytes, require_torch, require_torch_gpu, slow, torch_device
 
 from ...generation.test_utils import GenerationTesterMixin
 from ...test_configuration_common import ConfigTester
@@ -260,8 +260,9 @@ class VipLlavaForConditionalGenerationIntegrationTest(unittest.TestCase):
         self.processor = AutoProcessor.from_pretrained("llava-hf/vip-llava-7b-hf")
 
     def tearDown(self):
-        gc.collect()
-        torch.cuda.empty_cache()
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     @slow
     @require_bitsandbytes

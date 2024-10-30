@@ -28,6 +28,7 @@ from transformers import (
     is_vision_available,
 )
 from transformers.testing_utils import (
+    backend_empty_cache,
     require_read_token,
     require_torch,
     require_torch_sdpa,
@@ -339,8 +340,9 @@ class PaliGemmaForConditionalGenerationIntegrationTest(unittest.TestCase):
         self.processor = PaliGemmaProcessor.from_pretrained("google/paligemma-3b-pt-224")
 
     def tearDown(self):
-        gc.collect()
-        torch.cuda.empty_cache()
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     def test_small_model_integration_test(self):
         # Let' s make sure we test the preprocessing to replace what is used

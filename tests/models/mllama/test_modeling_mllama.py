@@ -30,6 +30,7 @@ from transformers import (
 )
 from transformers.models.mllama.configuration_mllama import MllamaTextConfig
 from transformers.testing_utils import (
+    backend_empty_cache,
     is_flaky,
     require_bitsandbytes,
     require_read_token,
@@ -397,8 +398,9 @@ class MllamaForConditionalGenerationIntegrationTest(unittest.TestCase):
         self.instruct_model_checkpoint = "meta-llama/Llama-3.2-11B-Vision-Instruct"
 
     def tearDown(self):
-        gc.collect()
-        torch.cuda.empty_cache()
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     @slow
     @require_torch_gpu

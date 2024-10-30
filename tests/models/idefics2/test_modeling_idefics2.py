@@ -628,8 +628,9 @@ class Idefics2ForConditionalGenerationIntegrationTest(unittest.TestCase):
         )
 
     def tearDown(self):
-        gc.collect()
-        torch.cuda.empty_cache()
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     @slow
     @require_torch_multi_gpu

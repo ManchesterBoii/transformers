@@ -542,8 +542,9 @@ class GPT2ModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTesterMixin
     def tearDown(self):
         super().tearDown()
         # clean-up as much as possible GPU memory occupied by PyTorch
-        gc.collect()
-        backend_empty_cache(torch_device)
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     def test_config(self):
         self.config_tester.run_common_tests()
@@ -753,8 +754,9 @@ class GPT2ModelLanguageGenerationTest(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         # clean-up as much as possible GPU memory occupied by PyTorch
-        gc.collect()
-        backend_empty_cache(torch_device)
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     def _test_lm_generate_gpt2_helper(
         self,

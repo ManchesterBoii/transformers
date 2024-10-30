@@ -28,6 +28,7 @@ from transformers import (
     is_vision_available,
 )
 from transformers.testing_utils import (
+    backend_empty_cache,
     require_bitsandbytes,
     require_torch,
     slow,
@@ -338,8 +339,9 @@ class LlavaNextForConditionalGenerationIntegrationTest(unittest.TestCase):
         self.prompt = "[INST] <image>\nWhat is shown in this image? [/INST]"
 
     def tearDown(self):
-        gc.collect()
-        torch.cuda.empty_cache()
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     @slow
     @require_bitsandbytes

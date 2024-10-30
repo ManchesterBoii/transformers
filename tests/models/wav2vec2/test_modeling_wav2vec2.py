@@ -1460,8 +1460,9 @@ class Wav2Vec2ModelIntegrationTest(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         # clean-up as much as possible GPU memory occupied by PyTorch
-        gc.collect()
-        backend_empty_cache(torch_device)
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     def _load_datasamples(self, num_samples):
         ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")

@@ -211,8 +211,9 @@ class UnivNetModelTest(ModelTesterMixin, unittest.TestCase):
 class UnivNetModelIntegrationTests(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
-        gc.collect()
-        backend_empty_cache(torch_device)
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     def _load_datasamples(self, num_samples, sampling_rate=24000):
         ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")

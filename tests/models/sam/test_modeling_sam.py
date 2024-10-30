@@ -469,8 +469,9 @@ class SamModelIntegrationTest(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         # clean-up as much as possible GPU memory occupied by PyTorch
-        gc.collect()
-        backend_empty_cache(torch_device)
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     def test_inference_mask_generation_no_point(self):
         model = SamModel.from_pretrained("facebook/sam-vit-base")
