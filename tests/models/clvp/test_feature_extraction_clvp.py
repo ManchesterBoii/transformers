@@ -24,7 +24,7 @@ import numpy as np
 from datasets import Audio, load_dataset
 
 from transformers import ClvpFeatureExtractor
-from transformers.testing_utils import check_json_file_has_correct_format, require_torch, slow
+from transformers.testing_utils import backend_empty_cache, check_json_file_has_correct_format, require_torch, slow, torch_device
 from transformers.utils.import_utils import is_torch_available
 
 from ...test_sequence_feature_extraction_common import SequenceFeatureExtractionTestMixin
@@ -116,8 +116,9 @@ class ClvpFeatureExtractionTest(SequenceFeatureExtractionTestMixin, unittest.Tes
     def tearDown(self):
         super().tearDown()
         # clean-up as much as possible GPU memory occupied by PyTorch
-        gc.collect()
-        torch.cuda.empty_cache()
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     # Copied from transformers.tests.models.whisper.test_feature_extraction_whisper.WhisperFeatureExtractionTest.test_feat_extract_from_and_save_pretrained
     def test_feat_extract_from_and_save_pretrained(self):

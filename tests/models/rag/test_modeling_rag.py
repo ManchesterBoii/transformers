@@ -29,6 +29,7 @@ from transformers.models.bert.tokenization_bert import VOCAB_FILES_NAMES as DPR_
 from transformers.models.dpr.tokenization_dpr import DPRContextEncoderTokenizer, DPRQuestionEncoderTokenizer
 from transformers.models.roberta.tokenization_roberta import VOCAB_FILES_NAMES as BART_VOCAB_FILES_NAMES
 from transformers.testing_utils import (
+    backend_empty_cache,
     get_tests_dir,
     require_sentencepiece,
     require_tokenizers,
@@ -196,8 +197,9 @@ class RagTestMixin:
         shutil.rmtree(self.tmpdirname)
 
         # clean-up as much as possible GPU memory occupied by PyTorch
-        gc.collect()
-        torch.cuda.empty_cache()
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     def get_retriever(self, config):
         dataset = Dataset.from_dict(
@@ -684,8 +686,9 @@ class RagModelIntegrationTests(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         # clean-up as much as possible GPU memory occupied by PyTorch
-        gc.collect()
-        torch.cuda.empty_cache()
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     @cached_property
     def sequence_model(self):
@@ -1043,8 +1046,9 @@ class RagModelSaveLoadTests(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         # clean-up as much as possible GPU memory occupied by PyTorch
-        gc.collect()
-        torch.cuda.empty_cache()
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     def get_rag_config(self):
         question_encoder_config = AutoConfig.from_pretrained("facebook/dpr-question_encoder-single-nq-base")

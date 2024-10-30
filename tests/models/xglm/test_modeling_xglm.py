@@ -20,6 +20,7 @@ import unittest
 
 from transformers import XGLMConfig, is_torch_available
 from transformers.testing_utils import (
+    backend_empty_cache,
     require_torch,
     require_torch_accelerator,
     require_torch_fp16,
@@ -343,8 +344,9 @@ class XGLMModelLanguageGenerationTest(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         # clean-up as much as possible GPU memory occupied by PyTorch
-        gc.collect()
-        torch.cuda.empty_cache()
+        if torch_device != "cpu":
+            gc.collect()
+            backend_empty_cache(torch_device)
 
     def _test_lm_generate_xglm_helper(
         self,
