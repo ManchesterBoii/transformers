@@ -420,7 +420,7 @@ class ViTMAESelfAttention(nn.Module):
 
 # Copied from transformers.models.vit.modeling_vit.ViTSdpaSelfAttention ViT->ViTMAE
 class ViTMAESdpaSelfAttention(ViTMAESelfAttention):
-    def __init__(self, config: ViTMAEConfig) -> None:
+    def __init__(self, config: ViTMAEVQConfig) -> None:
         super().__init__(config)
         self.attention_probs_dropout_prob = config.attention_probs_dropout_prob
 
@@ -473,7 +473,7 @@ class ViTMAESelfOutput(nn.Module):
     layernorm applied before each block.
     """
 
-    def __init__(self, config: ViTMAEConfig) -> None:
+    def __init__(self, config: ViTMAEVQConfig) -> None:
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
@@ -487,7 +487,7 @@ class ViTMAESelfOutput(nn.Module):
 
 # Copied from transformers.models.vit.modeling_vit.ViTAttention with ViT->ViTMAE
 class ViTMAEAttention(nn.Module):
-    def __init__(self, config: ViTMAEConfig) -> None:
+    def __init__(self, config: ViTMAEVQConfig) -> None:
         super().__init__()
         self.attention = ViTMAESelfAttention(config)
         self.output = ViTMAESelfOutput(config)
@@ -527,14 +527,14 @@ class ViTMAEAttention(nn.Module):
 
 # Copied from transformers.models.vit.modeling_vit.ViTSdpaAttention with ViT->ViTMAE
 class ViTMAESdpaAttention(ViTMAEAttention):
-    def __init__(self, config: ViTMAEConfig) -> None:
+    def __init__(self, config: ViTMAEVQConfig) -> None:
         super().__init__(config)
         self.attention = ViTMAESdpaSelfAttention(config)
 
 
 # Copied from transformers.models.vit.modeling_vit.ViTIntermediate ViT->ViTMAE
 class ViTMAEIntermediate(nn.Module):
-    def __init__(self, config: ViTMAEConfig) -> None:
+    def __init__(self, config: ViTMAEVQConfig) -> None:
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.intermediate_size)
         if isinstance(config.hidden_act, str):
@@ -551,7 +551,7 @@ class ViTMAEIntermediate(nn.Module):
 
 # Copied from transformers.models.vit.modeling_vit.ViTOutput ViT->ViTMAE
 class ViTMAEOutput(nn.Module):
-    def __init__(self, config: ViTMAEConfig) -> None:
+    def __init__(self, config: ViTMAEVQConfig) -> None:
         super().__init__()
         self.dense = nn.Linear(config.intermediate_size, config.hidden_size)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
@@ -575,7 +575,7 @@ VITMAE_ATTENTION_CLASSES = {
 class ViTMAELayer(nn.Module):
     """This corresponds to the Block class in the timm implementation."""
 
-    def __init__(self, config: ViTMAEConfig) -> None:
+    def __init__(self, config: ViTMAEVQConfig) -> None:
         super().__init__()
         self.chunk_size_feed_forward = config.chunk_size_feed_forward
         self.seq_len_dim = 1
@@ -616,7 +616,7 @@ class ViTMAELayer(nn.Module):
 
 # Copied from transformers.models.vit.modeling_vit.ViTEncoder with ViT->ViTMAE
 class ViTMAEEncoder(nn.Module):
-    def __init__(self, config: ViTMAEConfig) -> None:
+    def __init__(self, config: ViTMAEVQConfig) -> None:
         super().__init__()
         self.config = config
         self.layer = nn.ModuleList([ViTMAELayer(config) for _ in range(config.num_hidden_layers)])
@@ -672,7 +672,7 @@ class ViTMAEPreTrainedModel(PreTrainedModel):
     models.
     """
 
-    config_class = ViTMAEConfig
+    config_class = ViTMAEVQConfig
     base_model_prefix = "vit"
     main_input_name = "pixel_values"
     supports_gradient_checkpointing = True
@@ -697,7 +697,7 @@ VIT_MAE_START_DOCSTRING = r"""
     behavior.
 
     Parameters:
-        config ([`ViTMAEConfig`]): Model configuration class with all the parameters of the model.
+        config ([`ViTMAEVQConfig`]): Model configuration class with all the parameters of the model.
             Initializing with a config file does not load the weights associated with the model, only the
             configuration. Check out the [`~PreTrainedModel.from_pretrained`] method to load the model weights.
 """
