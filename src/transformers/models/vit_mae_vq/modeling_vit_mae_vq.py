@@ -1189,7 +1189,7 @@ class ViTMAEForPreTraining(ViTMAEPreTrainedModel):
         # introduce lambda to balance if needed
 
         if not return_dict:
-            output = (logits, mask, ids_restore) + vit_outputs[2:]
+            output = (logits, mask, ids_restore) + outputs[2:]
             return ((total_loss,) + output) if total_loss is not None else output
 
         return ViTMAEForPreTrainingOutput(
@@ -1197,6 +1197,6 @@ class ViTMAEForPreTraining(ViTMAEPreTrainedModel):
             logits=logits,
             mask=mask,
             ids_restore=ids_restore,
-            hidden_states=vit_outputs.hidden_states,
-            attentions=vit_outputs.attentions,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
         )
