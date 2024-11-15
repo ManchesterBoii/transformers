@@ -359,7 +359,7 @@ class ViTMAEPatchEmbeddings(nn.Module):
 
 # Copied from transformers.models.vit.modeling_vit.ViTSelfAttention ViT->ViTMAE
 class ViTMAESelfAttention(nn.Module):
-    def __init__(self, config: ViTMAEConfig) -> None:
+    def __init__(self, config: ViTMAEVQConfig) -> None:
         super().__init__()
         if config.hidden_size % config.num_attention_heads != 0 and not hasattr(config, "embedding_size"):
             raise ValueError(
@@ -1182,7 +1182,11 @@ class ViTMAEForPreTraining(ViTMAEPreTrainedModel):
         # TODO - check about matching scales of these things, look at lucidrains
         reconstruction_loss = self.forward_loss(pixel_values, logits, mask,
                                                 interpolate_pos_encoding=interpolate_pos_encoding)
+
         total_loss = reconstruction_loss + commitment_loss
+
+        # run a version MAE only, print out each loss
+        # introduce lambda to balance if needed
 
         if not return_dict:
             output = (logits, mask, ids_restore) + vit_outputs[2:]
