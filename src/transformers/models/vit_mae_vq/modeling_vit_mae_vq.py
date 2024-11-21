@@ -810,7 +810,7 @@ class ViTMAEModel(ViTMAEPreTrainedModel):
         embedding_output, mask, ids_restore = self.embeddings(
             pixel_values, noise=noise, interpolate_pos_encoding=interpolate_pos_encoding
         )
-
+        print(f"embedding output shape: {embedding_output.shape}")
         encoder_outputs = self.encoder(
             embedding_output,
             head_mask=head_mask,
@@ -819,7 +819,9 @@ class ViTMAEModel(ViTMAEPreTrainedModel):
             return_dict=return_dict)
 
         sequence_output = encoder_outputs[0]
+        print(f"sequence output shape before layer norm: {sequence_output.shape}")
         sequence_output = self.layernorm(sequence_output)
+        print(f"sequence output shape after layer norm: {sequence_output.shape}")
 
         # Apply vector quantization, return inplace of sequence output
         quantized_output, commitment_loss = self.vq_layer(sequence_output)
