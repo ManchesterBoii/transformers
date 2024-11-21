@@ -17,9 +17,12 @@ class VectorQuantizer(nn.Module):
         # Quantization dropout
         self.quantization_dropout = nn.Dropout(config.quantization_dropout) if config.quantization_dropout > 0 else None
 
-    def forward(self, x):
+    def forward(self, x, hidden_dim):
+        # modify this so that it accounts for the masking ratio of the encoder
+
+
         # Flatten the input for calculating distances
-        flat_input = x.view(-1, self.embedding_dim)
+        flat_input = x.view(-1, hidden_dim)
 
         # Compute distances to each codebook embedding
         distances = (torch.sum(flat_input ** 2, dim=1, keepdim=True)
