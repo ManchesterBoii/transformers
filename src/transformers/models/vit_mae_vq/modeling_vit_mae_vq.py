@@ -826,7 +826,7 @@ class ViTMAEModel(ViTMAEPreTrainedModel):
         print(f"sequence output shape after layer norm: {sequence_output.shape}")
 
         # Apply vector quantization, return inplace of sequence output
-        quantized_output, commitment_loss = self.vq_layer(sequence_output)
+        quantized_output, commitment_loss = self.vq_layer(sequence_output, self.hidden_size)
 
         if not return_dict:
             return (quantized_output, commitment_loss, mask, ids_restore) + encoder_outputs[1:]
