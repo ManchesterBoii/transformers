@@ -335,6 +335,8 @@ class ViTMAEPatchEmbeddings(nn.Module):
         image_size = image_size if isinstance(image_size, collections.abc.Iterable) else (image_size, image_size)
         patch_size = patch_size if isinstance(patch_size, collections.abc.Iterable) else (patch_size, patch_size)
         num_patches = (image_size[1] // patch_size[1]) * (image_size[0] // patch_size[0])
+        print(f"image size: {image_size}, patch size: {patch_size}")
+        print(f"num_patches: {num_patches}")
         self.image_size = image_size
         self.patch_size = patch_size
         self.num_channels = num_channels
