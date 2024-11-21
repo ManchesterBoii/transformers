@@ -18,7 +18,10 @@ class VectorQuantizer(nn.Module):
         self.quantization_dropout = nn.Dropout(config.quantization_dropout) if config.quantization_dropout > 0 else None
 
     def forward(self, x, hidden_dim):
-        # modify this so that it accounts for the masking ratio of the encoder
+        # need to check lucidrains for a linear layer going between
+        # the hidden size of the encoder
+        # and the hidden size of the codebook
+        # if no such layer exists, they are assumed to be the same
 
 
         # Flatten the input for calculating distances
