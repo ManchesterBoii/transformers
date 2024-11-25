@@ -69,9 +69,9 @@ class ViTMAEVQConfig(PretrainedConfig):
             Whether or not to train with normalized pixels (see Table 3 in the paper). Using normalized pixels improved
             representation quality in the experiments of the authors.
         num_codebooks (`int`, *optional*, defaults to 8):
-            Number of codebooks used in the vector quantization process.
-        embedding_dim (`int`, *optional*, defaults to 256):
-            Dimensionality of the embeddings in the codebooks.
+            The number of codebook embeddings for the vector quantization layer.
+        embedding_dim (`int`, *optional*, defaults to the `hidden_size`):
+            The dimensionality of each codebook embedding in the vector quantization layer.
         commitment_cost (`float`, *optional*, defaults to 0.25):
             Weighting factor for the VQ commitment loss, balancing encoder commitment to codebook embeddings.
         quantization_dropout (`float`, *optional*, defaults to 0.1):
@@ -116,7 +116,7 @@ class ViTMAEVQConfig(PretrainedConfig):
         mask_ratio=0.75,
         norm_pix_loss=False,
         num_codebooks=8,  # New parameter for VQ
-        embedding_dim=256,  # Dimension for each codebook embedding in VQ
+        embedding_dim=None,  # Match to hidden_size by default
         commitment_cost=0.25,  # Commitment cost for VQ
         quantization_dropout=0.1,  # Dropout for VQ robustness
         **kwargs,
@@ -145,6 +145,11 @@ class ViTMAEVQConfig(PretrainedConfig):
 
         # VQ-specific configurations
         self.num_codebooks = num_codebooks
-        self.embedding_dim = embedding_dim
+        self.embedding_dim = embedding_dim if embedding_dim is not None else hidden_size
         self.commitment_cost = commitment_cost
         self.quantization_dropout = quantization_dropout
+
+        if self.embedding_dim != self.hidden_size:
+            raise ValueError(
+                f"`embedding_dim` ({self.embedding_dim}) must match `hidden_size` ({self.hidden_size}) for consistent dimensionality in the vector quantizer."
+            )
