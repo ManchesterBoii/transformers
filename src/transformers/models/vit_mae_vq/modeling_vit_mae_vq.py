@@ -42,7 +42,6 @@ from .vq_layer import VectorQuantizer
 
 logger = logging.get_logger(__name__)
 
-# TODO - figure out what these variables do, and modify them
 _CONFIG_FOR_DOC = "ViTMAEConfig"
 _CHECKPOINT_FOR_DOC = "facebook/vit-mae-base"
 
@@ -812,7 +811,7 @@ class ViTMAEModel(ViTMAEPreTrainedModel):
         embedding_output, mask, ids_restore = self.embeddings(
             pixel_values, noise=noise, interpolate_pos_encoding=interpolate_pos_encoding
         )
-        print(f"embedding output shape: {embedding_output.shape}")
+
         encoder_outputs = self.encoder(
             embedding_output,
             head_mask=head_mask,
@@ -821,9 +820,7 @@ class ViTMAEModel(ViTMAEPreTrainedModel):
             return_dict=return_dict)
 
         sequence_output = encoder_outputs[0]
-        print(f"sequence output shape before layer norm: {sequence_output.shape}")
         sequence_output = self.layernorm(sequence_output)
-        print(f"sequence output shape after layer norm: {sequence_output.shape}")
 
         # Apply vector quantization, return inplace of sequence output
         quantized_output, commitment_loss = self.vq_layer(sequence_output, self.config.hidden_size)
@@ -1164,7 +1161,6 @@ class ViTMAEForPreTraining(ViTMAEPreTrainedModel):
         ```"""
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        # TODO - if modifying the output class from previous, don't need to separate commitment_loss here
         outputs, commitment_loss = self.vit(
             pixel_values,
             noise=noise,
@@ -1183,14 +1179,10 @@ class ViTMAEForPreTraining(ViTMAEPreTrainedModel):
         logits = decoder_outputs.logits  # shape (batch_size, num_patches, patch_size*patch_size*num_channels)
 
         # Calculate loss as a combination of forward loss and commitment loss
-        # TODO - check about matching scales of these things, look at lucidrains
         reconstruction_loss = self.forward_loss(pixel_values, logits, mask,
                                                 interpolate_pos_encoding=interpolate_pos_encoding)
 
         total_loss = reconstruction_loss + commitment_loss
-
-        # run a version MAE only, print out each loss
-        # introduce lambda to balance if needed
 
         if not return_dict:
             output = (logits, mask, ids_restore) + outputs[2:]
