@@ -12,6 +12,8 @@ class VectorQuantizer(nn.Module):
         self.codebook_size = config.num_codebooks
         self.embedding_dim = config.embedding_dim
         self.commitment_cost = config.commitment_cost
+        # Update config to include a codebook cost term
+        self.codebook_cost = config.codebook_cost
 
         # Initialize the codebook
         self.codebook = nn.Parameter(torch.randn(self.codebook_size, self.embedding_dim))
@@ -54,8 +56,10 @@ class VectorQuantizer(nn.Module):
         if self.quantization_dropout:
             quantized = self.quantization_dropout(quantized)
 
-        # Compute commitment loss
-        commitment_loss = self.commitment_cost * F.mse_loss(quantized.detach(), x)
+        # Compute losses
+        codebook_loss = F.mse_loss(quantized, x.detach()) 
+        commitment_loss = F.mse_loss(quantized.detach(), x)
+        total_loss = self.codebook_cost * codebook_loss + self.commitment_cost * commitment_loss
 
         # Use straight-through estimator to pass gradients to the encoder
         quantized = x + (quantized - x).detach()
