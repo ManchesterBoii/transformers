@@ -1189,7 +1189,8 @@ class ViTMAEForPreTraining(ViTMAEPreTrainedModel):
             return ((total_loss,) + output) if total_loss is not None else output
 
         return ViTMAEForPreTrainingOutput(
-            loss=total_loss,
+            # loss=total_loss,
+            loss=commitment_loss,
             logits=logits,
             mask=mask,
             ids_restore=ids_restore,
