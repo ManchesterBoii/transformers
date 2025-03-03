@@ -743,9 +743,6 @@ class ViTMAEModel(ViTMAEPreTrainedModel):
 
         self.layernorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
 
-        # Vector quantization layer
-        self.vq_layer = VectorQuantizer(config)
-
         # Initialize weights and apply final processing
         self.post_init()
 
@@ -822,21 +819,15 @@ class ViTMAEModel(ViTMAEPreTrainedModel):
         sequence_output = encoder_outputs[0]
         sequence_output = self.layernorm(sequence_output)
 
-        # Apply vector quantization, return inplace of sequence output
-        quantized_output, commitment_loss = self.vq_layer(sequence_output, self.config.hidden_size)
-
         if not return_dict:
-            return (quantized_output, commitment_loss, mask, ids_restore) + encoder_outputs[1:]
+            return (sequence_output, mask, ids_restore) + encoder_outputs[1:]
 
-        # NEW return tuple - standard ViTMAEModelOutput object, along with a commitment loss
-        # check with team - should we modify the ViTMAEModelOutput object to have commitment loss as
-        # a field
         return ViTMAEModelOutput(
-            last_hidden_state=quantized_output,
+            last_hidden_state=sequence_output,
             mask=mask,
             ids_restore=ids_restore,
             hidden_states=encoder_outputs.hidden_states,
-            attentions=encoder_outputs.attentions), commitment_loss
+            attentions=encoder_outputs.attentions)
 
 
 class ViTMAEDecoder(nn.Module):
@@ -1003,6 +994,13 @@ class ViTMAEForPreTraining(ViTMAEPreTrainedModel):
         self.vit = ViTMAEModel(config)
         self.decoder = ViTMAEDecoder(config, num_patches=self.vit.embeddings.num_patches)
 
+        if getattr(config, "use_custom_vq", True):
+            from .vq_layer import VectorQuantizer
+            self.vq_layer = VectorQuantizer(config)
+        else:
+            from vector_quantize_pytorch import VectorQuantize
+            self.vq_layer = VectorQuantize(dim=config.embedding_dim, codebook_size=config.num_codebooks)
+
         # Initialize weights and apply final processing
         self.post_init()
 
@@ -1161,7 +1159,7 @@ class ViTMAEForPreTraining(ViTMAEPreTrainedModel):
         ```"""
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        outputs, commitment_loss = self.vit(
+        outputs = self.vit(
             pixel_values,
             noise=noise,
             head_mask=head_mask,
@@ -1175,7 +1173,9 @@ class ViTMAEForPreTraining(ViTMAEPreTrainedModel):
         ids_restore = outputs.ids_restore
         mask = outputs.mask
 
-        decoder_outputs = self.decoder(latent, ids_restore, interpolate_pos_encoding=interpolate_pos_encoding)
+        quantized_output, embed_ind, commitment_loss = self.vq_layer(latent)
+
+        decoder_outputs = self.decoder(quantized_output, ids_restore, interpolate_pos_encoding=interpolate_pos_encoding)
         logits = decoder_outputs.logits  # shape (batch_size, num_patches, patch_size*patch_size*num_channels)
 
         # Calculate loss as a combination of forward loss and commitment loss
@@ -1189,8 +1189,7 @@ class ViTMAEForPreTraining(ViTMAEPreTrainedModel):
             return ((total_loss,) + output) if total_loss is not None else output
 
         return ViTMAEForPreTrainingOutput(
-            # loss=total_loss,
-            loss=commitment_loss,
+            loss=total_loss,
             logits=logits,
             mask=mask,
             ids_restore=ids_restore,

@@ -64,4 +64,4 @@ class VectorQuantizer(nn.Module):
         # Use straight-through estimator to pass gradients to the encoder
         quantized = x + (quantized - x).detach()
 
-        return quantized, total_loss
+        return quantized, encoding_indices, total_loss
